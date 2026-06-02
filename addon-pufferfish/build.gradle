@@ -1,0 +1,13 @@
+neoForge {
+    mods {
+        "${mod_id}" {
+            sourceSet(sourceSets.main)
+        }
+    }
+}
+
+group = mod_group_id
+
+dependencies {
+    implementation "curse.maven:puffish-skills-835091:7672803"
+}

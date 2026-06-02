@@ -1,0 +1,12 @@
+{
+  "ftbquests.overlay.astages.action.add": "Action: Add Stage",
+  "ftbquests.overlay.astages.action.remove": "Action: Remove Stage",
+  "ftbquests.overlay.astages.placeholder": "Insert stage here...",
+  "ftbquests.reward.astages.player": "AStages Player",
+  "ftbquests.reward.astages.player.remove": "Remove",
+  "ftbquests.reward.astages.player.stage": "Stage",
+  "ftbquests.reward.astages.server": "AStages Server",
+  "ftbquests.reward.astages.server.remove": "Remove",
+  "ftbquests.reward.astages.server.stage": "Stage",
+  "ftbquests.reward.astages.stage_description": "Stage: "
+}

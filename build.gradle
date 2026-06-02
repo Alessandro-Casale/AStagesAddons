@@ -1,0 +1,142 @@
+plugins {
+    id 'idea'
+    id 'net.neoforged.moddev' version '2.0.141' apply false
+    id 'maven-publish'
+    id 'java-library'
+}
+
+idea {
+    module {
+        downloadSources = true
+        downloadJavadoc = true
+    }
+}
+
+subprojects {
+    apply plugin: 'java-library'
+    apply plugin: 'maven-publish'
+    apply plugin: 'net.neoforged.moddev'
+
+    version = project.findProperty('mod_version') ?: '0.0.1'
+
+    base {
+        archivesName = project.findProperty('mod_id') ?: project.name
+    }
+
+    java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+
+        exclusiveContent {
+            forRepository {
+                maven {
+                    url "https://cursemaven.com"
+                }
+            }
+
+            filter {
+                includeGroup "curse.maven"
+            }
+        }
+
+        maven {
+            url = uri("https://maven.latvian.dev/releases")
+            content {
+                includeGroup("dev.latvian.mods")
+                includeGroup("dev.latvian.apps")
+            }
+        }
+
+        maven {
+            url = uri("https://jitpack.io")
+            content {
+                includeGroup("com.github.rtyley")
+            }
+        }
+    }
+
+    neoForge {
+        version = rootProject.neo_version
+
+        parchment {
+            mappingsVersion = rootProject.parchment_mappings_version
+            minecraftVersion = rootProject.parchment_minecraft_version
+        }
+
+        runs {
+            client {
+                client()
+                systemProperty 'neoforge.enabledGameTestNamespaces', project.findProperty('mod_id') ?: ''
+            }
+
+            server {
+                server()
+                programArgument '--nogui'
+                systemProperty 'neoforge.enabledGameTestNamespaces', project.findProperty('mod_id') ?: ''
+            }
+
+            gameTestServer {
+                type = "gameTestServer"
+                systemProperty 'neoforge.enabledGameTestNamespaces', project.findProperty('mod_id') ?: ''
+            }
+
+            data {
+                data()
+                programArguments.addAll '--mod', project.findProperty('mod_id') ?: '', '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
+            }
+
+            configureEach {
+                systemProperty 'forge.logging.markers', 'REGISTRIES'
+                logLevel = org.slf4j.event.Level.DEBUG
+            }
+        }
+    }
+
+    sourceSets.main.resources { srcDir 'src/generated/resources' }
+
+    dependencies {
+        implementation "curse.maven:astages-1120180:8136882"
+        // implementation("dev.latvian.mods:kubejs-neoforge:2101.7.2-build.348")
+        implementation files(rootProject.file("libs/rhino-2101.2.7-build.81.jar"))
+        implementation files(rootProject.file("libs/kubejs-neoforge-2101.7.2-build.368.jar"))
+        implementation("curse.maven:probejs-585406:7105159")
+    }
+
+    var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
+        var replaceProperties = [
+                minecraft_version      : rootProject.minecraft_version,
+                minecraft_version_range: rootProject.minecraft_version_range,
+                neo_version            : rootProject.neo_version,
+                neo_version_range      : rootProject.neo_version_range,
+                loader_version_range   : rootProject.loader_version_range,
+                mod_id                 : project.findProperty('mod_id') ?: '',
+                mod_name               : project.findProperty('mod_name') ?: '',
+                mod_license            : project.findProperty('mod_license') ?: '',
+                mod_version            : project.findProperty('mod_version') ?: '',
+                mod_authors            : project.findProperty('mod_authors') ?: '',
+                mod_description        : project.findProperty('mod_description') ?: ''
+        ]
+        inputs.properties replaceProperties
+        expand replaceProperties
+        from "src/main/templates"
+        into "build/generated/sources/modMetadata"
+    }
+
+    sourceSets.main.resources.srcDir generateModMetadata
+    neoForge.ideSyncTask generateModMetadata
+
+    publishing {
+        publications {
+            register('mavenJava', MavenPublication) {
+                from components.java
+            }
+        }
+        repositories {
+            maven {
+                url "file://${rootProject.projectDir}/repo"
+            }
+        }
+    }
+}

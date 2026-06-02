@@ -1,0 +1,13 @@
+neoForge {
+    mods {
+        "${mod_id}" {
+            sourceSet(sourceSets.main)
+        }
+    }
+}
+
+group = mod_group_id
+
+dependencies {
+    implementation "curse.maven:curios-309927:6529130"
+}
