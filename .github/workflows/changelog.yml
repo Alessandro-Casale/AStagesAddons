@@ -75,7 +75,6 @@ jobs:
             TAG=$(git rev-list --max-parents=0 HEAD | head -n 1)
           fi
           
-        
           echo "tag=$TAG" >> $GITHUB_OUTPUT
 
       - name: Generate Dynamic Config File from Single JSON
@@ -96,29 +95,28 @@ jobs:
           ignorePreReleases: false
           fetchViaCommits: true
           fromTag: ${{ steps.latest_tag.outputs.tag }}
-          toTag: ${{ github.ref_name }}
           token: ${{ secrets.TOKEN_GITHUB }}
           outputFile: "CHANGELOG_TEMP.md"
 
-      - name: Update cumulative addon changelog
+      - name: Update addon changelog
         run: |
           TARGET_FILE="addon-${{ matrix.addon }}/CHANGELOG.md"
           VERSION="${{ steps.version.outputs.version }}"
           DATE="${{ steps.date.outputs.today }}"
           
-          if [ -f "$TARGET_FILE" ]; then
-            (echo "## [$VERSION] - $DATE"; cat CHANGELOG_TEMP.md; echo ""; cat "$TARGET_FILE") > temp && mv temp "$TARGET_FILE"
-          else
-            (echo "## [$VERSION] - $DATE"; cat CHANGELOG_TEMP.md) > "$TARGET_FILE"
-          fi
+          (echo "## [$VERSION] - $DATE"; cat CHANGELOG_TEMP.md) > "$TARGET_FILE"
           rm -f CHANGELOG_TEMP.md
 
       - name: Commit and push changelog
         run: |
           git config user.name "alessandro-casale"
           git config user.email "alessandro.casale.developer@gmail.com"
+          
           git add "addon-${{ matrix.addon }}/CHANGELOG.md"
+          
           git diff --cached --quiet || git commit -m "docs: Update changelog for ${{ matrix.addon }} ${{ steps.version.outputs.version }}"
+          
           git fetch origin ${{ github.ref_name }}
           git pull --rebase origin ${{ github.ref_name }}
+          
           git push origin ${{ github.ref_name }}
