@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       addon:
-        description: "Inserisci il nome dell'addon (es: curios, ftbquests) o 'all' per aggiornarli tutti in automatico"
+        description: "Insert addon name (es: curios, ftbquests) or 'all' in order to update everything automatically"
         required: true
         default: "all"
         type: string
@@ -94,7 +94,7 @@ jobs:
           fromTag: ${{ steps.latest_tag.outputs.tag }}
           toTag: ${{ github.ref_name }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          outputFile: "CHANGELOG.md"
+          outputFile: "CHANGELOG_TEMP.md"
 
       - name: Update cumulative addon changelog
         run: |
