@@ -82,10 +82,8 @@ jobs:
         run: |
           OTHER_ADDONS=$(ls -d addon-* | sed 's/addon-//' | grep -v "^${{ matrix.addon }}$" | jq -R . | jq -s .)
           
-          jq --arg addon "${{ matrix.addon }}" \
-             --arg pattern "^(api|feat|fix|perf|removed)(\\(${{ matrix.addon }}\\))?:\\s*" \
-             --argjson ignore "$OTHER_ADDONS" \
-             '.ignore_labels = $ignore | .transformers[0].pattern = $pattern' \
+          jq --argjson ignore "$OTHER_ADDONS" \
+             '.ignore_labels = $ignore' \
              .github/changelog-config.json > .github/changelog-config-dynamic.json
 
       - id: build_changelog

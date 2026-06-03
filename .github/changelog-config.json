@@ -1,7 +1,7 @@
 {
   "template": "\n\n#{{CHANGELOG}}\n",
   "pr_template": "- #{{TITLE}}. ([##{{NUMBER}}](#{{URL}}))",
-  "commit_template": "- #{{MESSAGE}} ([#{{SHA}}](https://github.com/Alessandro-Casale/AStagesAddons/commit/#{{SHA}}))",
+  "commit_template": "- #{{TITLE}} ([#{{SHA}}](https://github.com/Alessandro-Casale/AStagesAddons/commit/#{{SHA}}))",
   "conventional_commits": {
     "type_to_label": true
   },
@@ -27,11 +27,5 @@
       "labels": ["removed"]
     }
   ],
-  "ignore_labels": [],
-  "transformers": [
-    {
-      "pattern": "^(api|feat|fix|perf|removed)(\\([a-zA-Z0-9_-]+\\))?:\\s*",
-      "target": ""
-    }
-  ]
+  "ignore_labels": []
 }
