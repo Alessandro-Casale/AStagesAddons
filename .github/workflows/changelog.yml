@@ -70,6 +70,12 @@ jobs:
               | sort -V \
               | tail -n 1)
           fi
+          
+          if [ -z "$TAG" ]; then
+            TAG=$(git rev-list --max-parents=0 HEAD | head -n 1)
+          fi
+          
+        
           echo "tag=$TAG" >> $GITHUB_OUTPUT
 
       - name: Generate Dynamic Config File from Single JSON
