@@ -11,7 +11,7 @@ import dev.ftb.mods.ftbquests.quest.reward.RewardType;
 
 @NotNullParams
 public class AFTBQuestsUtils {
-    public static void setGuiProvider(RewardType type, Function3<Quest, StringConfig, BooleanConfig, Reward> reward) {
+    public static void setGuiProvider(RewardType type, Function3<Quest, StringConfig, BooleanConfig, Reward> function) {
         type.setGuiProvider((panel, quest, callback) -> {
             var stageConfig = new StringConfig();
 
@@ -20,7 +20,7 @@ public class AFTBQuestsUtils {
 
             EditStageRewardOverlay overlay = new EditStageRewardOverlay(panel.getGui(), stageConfig, removeConfig, accepted -> {
                 if (accepted) {
-                    callback.accept(reward.apply(quest, stageConfig, removeConfig));
+                    callback.accept(function.apply(quest, stageConfig, removeConfig));
                 }
 
                 panel.run();
