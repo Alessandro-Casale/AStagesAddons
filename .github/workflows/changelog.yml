@@ -59,13 +59,11 @@ jobs:
       - name: Get latest stable version tag for addon
         id: latest_tag
         run: |
-          # Cerca l'ultimo tag specifico di questo addon (es: curios-v2.0.0)
           TAG=$(git tag --list '${{ matrix.addon }}-v*' \
             | grep -Ev 'alpha|beta|rc' \
             | sort -V \
             | tail -n 1)
           
-          # Fallback: se non esiste, usa l'ultimo tag globale
           if [ -z "$TAG" ]; then
             TAG=$(git tag --list 'v*' \
               | grep -Ev 'alpha|beta|rc' \
@@ -93,7 +91,7 @@ jobs:
           fetchViaCommits: true
           fromTag: ${{ steps.latest_tag.outputs.tag }}
           toTag: ${{ github.ref_name }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.TOKEN_GITHUB }}
           outputFile: "CHANGELOG_TEMP.md"
 
       - name: Update cumulative addon changelog
