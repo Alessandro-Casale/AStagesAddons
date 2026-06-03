@@ -112,8 +112,5 @@ jobs:
           git config user.name "alessandro-casale"
           git config user.email "alessandro.casale.developer@gmail.com"
           git add "addon-${{ matrix.addon }}/CHANGELOG.md"
-          
-          git pull --rebase origin ${{ github.ref_name }}
-          
           git diff --cached --quiet || git commit -m "docs: Update changelog for ${{ matrix.addon }} ${{ steps.version.outputs.version }}"
-          git push origin ${{ github.ref_name }}
+          git push
