@@ -1,0 +1,121 @@
+name: Changelog
+
+on:
+  workflow_dispatch:
+    inputs:
+      addon:
+        description: "Inserisci il nome dell'addon (es: curios, ftbquests) o 'all' per aggiornarli tutti in automatico"
+        required: true
+        default: "all"
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      addons: ${{ steps.set-matrix.outputs.addons }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: set-matrix
+        run: |
+          INPUT="${{ github.event.inputs.addon }}"
+          if [ "$INPUT" = "all" ]; then
+            JSON_ARRAY=$(ls -d addon-* | sed 's/addon-//' | jq -R . | jq -s -c .)
+          else
+            JSON_ARRAY=$(echo "[\"$INPUT\"]" | jq -c .)
+          fi
+          echo "addons=$JSON_ARRAY" >> $GITHUB_OUTPUT
+
+  build_changelog:
+    needs: setup
+    environment: Token
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        addon: ${{ fromJson(needs.setup.outputs.addons) }}
+      max-parallel: 1
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Read version from addon gradle.properties
+        id: version
+        run: |
+          FULL_VERSION=$(grep "^mod_version=" "addon-${{ matrix.addon }}/gradle.properties" | sed 's/mod_version=//')
+          CLEAN_VERSION="${FULL_VERSION%-*}"
+          echo "version=$CLEAN_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Set date
+        id: date
+        run: echo "today=$(date +'%d-%m-%Y')" >> $GITHUB_OUTPUT
+
+      - name: Get latest stable version tag for addon
+        id: latest_tag
+        run: |
+          # Cerca l'ultimo tag specifico di questo addon (es: curios-v2.0.0)
+          TAG=$(git tag --list '${{ matrix.addon }}-v*' \
+            | grep -Ev 'alpha|beta|rc' \
+            | sort -V \
+            | tail -n 1)
+          
+          # Fallback: se non esiste, usa l'ultimo tag globale
+          if [ -z "$TAG" ]; then
+            TAG=$(git tag --list 'v*' \
+              | grep -Ev 'alpha|beta|rc' \
+              | sort -V \
+              | tail -n 1)
+          fi
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+
+      - name: Generate Dynamic Config File from Single JSON
+        id: dynamic_config
+        run: |
+          OTHER_ADDONS=$(ls -d addon-* | sed 's/addon-//' | grep -v "^${{ matrix.addon }}$" | jq -R . | jq -s .)
+          
+          jq --arg addon "${{ matrix.addon }}" \
+             --arg pattern "^(api|feat|fix|perf|removed)(\\(${{ matrix.addon }}\\))?:\\s*" \
+             --argjson ignore "$OTHER_ADDONS" \
+             '.ignore_labels = $ignore | .transformers[0].pattern = $pattern' \
+             .github/changelog-config.json > .github/changelog-config-dynamic.json
+
+      - id: build_changelog
+        uses: mikepenz/release-changelog-builder-action@v6
+        with:
+          configuration: ".github/changelog-config-dynamic.json"
+          ignorePreReleases: false
+          fetchViaCommits: true
+          fromTag: ${{ steps.latest_tag.outputs.tag }}
+          toTag: ${{ github.ref_name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          outputFile: "CHANGELOG.md"
+
+      - name: Update cumulative addon changelog
+        run: |
+          TARGET_FILE="addon-${{ matrix.addon }}/CHANGELOG.md"
+          VERSION="${{ steps.version.outputs.version }}"
+          DATE="${{ steps.date.outputs.today }}"
+          
+          if [ -f "$TARGET_FILE" ]; then
+            (echo "## [$VERSION] - $DATE"; cat CHANGELOG_TEMP.md; echo ""; cat "$TARGET_FILE") > temp && mv temp "$TARGET_FILE"
+          else
+            (echo "## [$VERSION] - $DATE"; cat CHANGELOG_TEMP.md) > "$TARGET_FILE"
+          fi
+          rm -f CHANGELOG_TEMP.md
+
+      - name: Commit and push changelog
+        run: |
+          git config user.name "alessandro-casale"
+          git config user.email "alessandro.casale.developer@gmail.com"
+          git add "addon-${{ matrix.addon }}/CHANGELOG.md"
+          
+          git pull --rebase origin ${{ github.ref_name }}
+          
+          git diff --cached --quiet || git commit -m "docs: Update changelog for ${{ matrix.addon }} ${{ steps.version.outputs.version }}"
+          git push origin ${{ github.ref_name }}
