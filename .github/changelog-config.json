@@ -1,6 +1,7 @@
 {
   "template": "\n\n#{{CHANGELOG}}\n",
   "pr_template": "- #{{TITLE}}. ([##{{NUMBER}}](#{{URL}}))",
+  "commit_template": "- #{{MESSAGE}} ([#{{SHA}}](https://github.com/Alessandro-Casale/AStagesAddons/commit/#{{SHA}}))",
   "categories": [
     {
       "title": "New Features",
