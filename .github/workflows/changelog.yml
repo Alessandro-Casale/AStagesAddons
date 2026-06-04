@@ -64,14 +64,18 @@ jobs:
 
           ADDON="${{ matrix.addon }}"
 
-          # ALWAYS sync latest state before doing anything
-          git fetch origin
-          git reset --hard origin/${{ github.ref_name }}
-
           git add addon-$ADDON/CHANGELOG.md
+
+          echo "Git status:"
+          git status
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
 
           VERSION=$(grep "^mod_version=" addon-$ADDON/gradle.properties | cut -d= -f2 | cut -d- -f1)
 
-          git commit -m "docs: Update changelog for $ADDON $VERSION" || exit 0
+          git commit -m "docs: Update changelog for $ADDON $VERSION"
 
           git push origin ${{ github.ref_name }}
