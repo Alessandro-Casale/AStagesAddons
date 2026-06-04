@@ -93,7 +93,7 @@ jobs:
           ignorePreReleases: false
           commitMode: true
           fromTag: ${{ steps.latest_tag.outputs.tag }}
-          toTag: ${{ github.sha }}
+          toTag: "HEAD"
           token: ${{ secrets.TOKEN_GITHUB }}
           outputFile: "CHANGELOG_TEMP.md"
 
