@@ -86,6 +86,16 @@ jobs:
              '.ignore_labels = $ignore' \
              .github/changelog-config.json > .github/changelog-config-dynamic.json
 
+      - name: Debug range
+        run: |
+          echo "FROM: ${{ steps.latest_tag.outputs.tag }}"
+          echo "TO: HEAD"
+          git log --oneline ${{ steps.latest_tag.outputs.tag }}..HEAD
+
+      - name: Debug config
+        run: |
+          cat .github/changelog-config-dynamic.json
+
       - id: build_changelog
         uses: mikepenz/release-changelog-builder-action@v6
         with:
@@ -97,6 +107,12 @@ jobs:
           token: ${{ secrets.TOKEN_GITHUB }}
           outputFile: "CHANGELOG_TEMP.md"
 
+      - name: Debug changelog
+        run: |
+          echo "=========="
+          cat CHANGELOG_TEMP.md
+          echo "=========="
+
       - name: Update addon changelog
         run: |
           TARGET_FILE="addon-${{ matrix.addon }}/CHANGELOG.md"
@@ -106,16 +122,16 @@ jobs:
           (echo "## [$VERSION] - $DATE"; cat CHANGELOG_TEMP.md) > "$TARGET_FILE"
           rm -f CHANGELOG_TEMP.md
 
-      - name: Commit and push changelog
-        run: |
-          git config user.name "alessandro-casale"
-          git config user.email "alessandro.casale.developer@gmail.com"
-          
-          git add "addon-${{ matrix.addon }}/CHANGELOG.md"
-          
-          git diff --cached --quiet || git commit -m "docs: Update changelog for ${{ matrix.addon }} ${{ steps.version.outputs.version }}"
-          
-          git fetch origin ${{ github.ref_name }}
-          git pull --rebase origin ${{ github.ref_name }}
-          
-          git push origin ${{ github.ref_name }}
+#      - name: Commit and push changelog
+#        run: |
+#          git config user.name "alessandro-casale"
+#          git config user.email "alessandro.casale.developer@gmail.com"
+#
+#          git add "addon-${{ matrix.addon }}/CHANGELOG.md"
+#
+#          git diff --cached --quiet || git commit -m "docs: Update changelog for ${{ matrix.addon }} ${{ steps.version.outputs.version }}"
+#
+#          git fetch origin ${{ github.ref_name }}
+#          git pull --rebase origin ${{ github.ref_name }}
+#
+#          git push origin ${{ github.ref_name }}
