@@ -53,12 +53,14 @@ for c in commits:
         continue
 
     type_ = m.group(1)
-    title = m.group(3).strip()
+    scope = m.group(3)
+    title = m.group(4).strip()
 
-    key = f"{type_}:{title}"
-    if key in seen:
+    if scope is None:
+        grouped[type_].append(title)
+
+    if scope != addon:
         continue
-    seen.add(key)
 
     grouped[type_].append(title)
 
