@@ -2,13 +2,16 @@ import subprocess
 import re
 import sys
 from datetime import datetime
+from collections import defaultdict
 
 addon = sys.argv[1]
 
 def run(cmd):
     return subprocess.check_output(cmd, shell=True).decode().strip()
 
-# 1. GET TAG RANGE
+# -------------------------
+# 1. TAG RANGE
+# -------------------------
 tags = run(f"git tag --list '{addon}-v*'").split("\n")
 tags = [t for t in tags if t]
 
@@ -17,50 +20,79 @@ if tags:
 else:
     from_tag = run("git rev-list --max-parents=0 HEAD")
 
-# 2. GET COMMITS
+# -------------------------
+# 2. COMMITS
+# -------------------------
 log = run(f"git log {from_tag}..HEAD --pretty=format:'%s'")
-
 commits = log.split("\n")
 
-# 3. PARSE
-pattern = re.compile(r"^(feat|fix|docs|refactor|chore|api|perf|removed)(\(([^)]+)\))?:\s*(.+)$")
+# -------------------------
+# 3. CATEGORY MAP
+# -------------------------
+categories = {
+    "feat": "New Features",
+    "fix": "Bug Fixes",
+    "api": "API Changes",
+    "perf": "Performance Improvements",
+    "removed": "Removed Features"
+}
 
+pattern = re.compile(
+    r"^(feat|fix|api|perf|removed)(\([^)]+\))?:\s*(.+)$"
+)
+
+grouped = defaultdict(list)
 seen = set()
-output_commits = []
 
+# -------------------------
+# 4. PARSE + GROUP
+# -------------------------
 for c in commits:
     m = pattern.match(c)
     if not m:
         continue
 
     type_ = m.group(1)
-    scope = m.group(3)
-    title = m.group(4).strip()
+    title = m.group(3).strip()
 
-    # dedupe
-    key = f"{type_}:{scope}:{title}"
+    key = f"{type_}:{title}"
     if key in seen:
         continue
     seen.add(key)
 
-    # FILTER LOGIC (IMPORTANT FIX)
-    if scope is None or scope == addon or scope.startswith(addon):
-        output_commits.append(f"- {type_}: {title}")
+    grouped[type_].append(title)
 
-# 4. VERSION
-version = run(f"grep '^mod_version=' addon-{addon}/gradle.properties | cut -d= -f2").split("-")[0]
+# -------------------------
+# 5. VERSION
+# -------------------------
+version = run(
+    f"grep '^mod_version=' addon-{addon}/gradle.properties | cut -d= -f2"
+).split("-")[0]
 
 date = datetime.now().strftime("%d-%m-%Y")
 
-# 5. FINAL OUTPUT (NO GLOBAL/SPEC SPLIT)
-changelog = f"""
-## [{version}] - {date}
+# -------------------------
+# 6. BUILD OUTPUT
+# -------------------------
+output = []
+output.append(f"## [{version}] - {date}\n")
 
-### Changes
-{chr(10).join(output_commits) if output_commits else "- No relevant changes"}
-"""
+for key in ["feat", "fix", "api", "perf", "removed"]:
+    items = grouped.get(key, [])
+    if not items:
+        continue
 
+    output.append(f"### {categories[key]}")
+    for i in items:
+        output.append(f"- {i}")
+    output.append("")  # spacing
+
+final_output = "\n".join(output).strip() + "\n"
+
+# -------------------------
+# 7. WRITE FILE
+# -------------------------
 with open(f"addon-{addon}/CHANGELOG.md", "w") as f:
-    f.write(changelog)
+    f.write(final_output)
 
-print(changelog)
+print(final_output)
