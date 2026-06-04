@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       addon:
-        description: "Insert addon name (es: curios, ftbquests) or 'all' in order to update everything automatically"
+        description: "Insert addon name (e.g. curios, ftbquests) or 'all'"
         required: true
         default: "all"
         type: string
@@ -13,8 +13,34 @@ permissions:
   contents: write
 
 jobs:
-  changelog:
+  setup:
     runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: set-matrix
+        run: |
+          INPUT="${{ github.event.inputs.addon }}"
+
+          if [ "$INPUT" = "all" ]; then
+            MATRIX=$(ls -d addon-* | sed 's|addon-||' | jq -R . | jq -s -c .)
+          else
+            MATRIX=$(echo "[\"$INPUT\"]" | jq -c .)
+          fi
+
+          echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
+
+  changelog:
+    needs: setup
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        addon: ${{ fromJson(needs.setup.outputs.matrix) }}
+      fail-fast: false
+      max-parallel: 4
 
     steps:
       - uses: actions/checkout@v4
@@ -27,13 +53,20 @@ jobs:
           python-version: "3.11"
 
       - name: Generate changelog
-        run: python .github/generate_changelog.py "${{ github.event.inputs.addon }}"
+        run: python .github/generate_changelog.py "${{ matrix.addon }}"
 
-      - name: Commit
+      - name: Commit changes
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
-          git add addon-${{ github.event.inputs.addon }}/CHANGELOG.md
-          git commit -m "docs: update changelog" || echo "No changes"
-          git push
+          ADDON="${{ matrix.addon }}"
+
+          git add addon-$ADDON/CHANGELOG.md
+
+          VERSION=$(grep "^mod_version=" addon-$ADDON/gradle.properties | cut -d= -f2 | cut -d- -f1)
+
+          git commit -m "docs: Update changelog for $ADDON $VERSION" || exit 0
+
+          git pull --rebase origin ${{ github.ref_name }}
+          git push origin ${{ github.ref_name }}
