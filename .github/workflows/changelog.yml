@@ -17,6 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
+
     steps:
       - uses: actions/checkout@v4
 
@@ -25,57 +26,98 @@ jobs:
           INPUT="${{ github.event.inputs.addon }}"
 
           if [ "$INPUT" = "all" ]; then
-            MATRIX=$(ls -d addon-* | sed 's|addon-||' | jq -R . | jq -s -c .)
+            MATRIX=$(find . -maxdepth 1 -type d -name "addon-*" \
+              | sed 's|^\./addon-||' \
+              | sort \
+              | jq -R . \
+              | jq -s -c .)
           else
             MATRIX=$(echo "[\"$INPUT\"]" | jq -c .)
           fi
 
-          echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
+          echo "matrix=$MATRIX" >> "$GITHUB_OUTPUT"
 
-  changelog:
+  generate:
     needs: setup
     runs-on: ubuntu-latest
 
     strategy:
-      matrix:
-        addon: ${{ fromJson(needs.setup.outputs.matrix) }}
       fail-fast: false
       max-parallel: 1
+      matrix:
+        addon: ${{ fromJson(needs.setup.outputs.matrix) }}
 
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
       - name: Generate changelog
-        run: python .github/generate_changelog.py "${{ matrix.addon }}"
-
-      - name: Commit changes
         run: |
-          set -e
+          python .github/generate_changelog.py "${{ matrix.addon }}"
 
+      - name: Upload changelog
+        uses: actions/upload-artifact@v4
+        with:
+          name: changelog-${{ matrix.addon }}
+          path: addon-${{ matrix.addon }}/CHANGELOG.md
+
+  commit:
+    needs:
+      - setup
+      - generate
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download all changelogs
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Replace changelog files
+        run: |
+          for addon in $(echo '${{ needs.setup.outputs.matrix }}' | jq -r '.[]'); do
+            cp \
+              "artifacts/changelog-$addon/CHANGELOG.md" \
+              "addon-$addon/CHANGELOG.md"
+          done
+
+      - name: Git status
+        run: |
+          git status
+          git diff --stat
+
+      - name: Commit and push
+        run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
-          ADDON="${{ matrix.addon }}"
-
-          git add addon-$ADDON/CHANGELOG.md
-
-          echo "Git status:"
-          git status
+          git add addon-*/CHANGELOG.md
 
           if git diff --cached --quiet; then
-            echo "No changes to commit"
+            echo "No changelog updates."
             exit 0
           fi
 
-          VERSION=$(grep "^mod_version=" addon-$ADDON/gradle.properties | cut -d= -f2 | cut -d- -f1)
+          if [ "${{ github.event.inputs.addon }}" = "all" ]; then
+            git commit -m "docs: Update changelogs"
+          else
+            ADDON="${{ github.event.inputs.addon }}"
 
-          git commit -m "docs: Update changelog for $ADDON $VERSION"
+            VERSION=$(grep "^mod_version=" addon-$ADDON/gradle.properties \
+              | cut -d= -f2 \
+              | cut -d- -f1)
 
-          git push origin ${{ github.ref_name }}
+            git commit -m "docs: Update changelog for $ADDON $VERSION"
+          fi
+
+          git push origin "${{ github.ref_name }}"
