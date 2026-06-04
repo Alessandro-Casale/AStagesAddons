@@ -40,7 +40,7 @@ jobs:
       matrix:
         addon: ${{ fromJson(needs.setup.outputs.matrix) }}
       fail-fast: false
-      max-parallel: 4
+      max-parallel: 1
 
     steps:
       - uses: actions/checkout@v4
@@ -57,10 +57,16 @@ jobs:
 
       - name: Commit changes
         run: |
+          set -e
+
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
           ADDON="${{ matrix.addon }}"
+
+          # ALWAYS sync latest state before doing anything
+          git fetch origin
+          git reset --hard origin/${{ github.ref_name }}
 
           git add addon-$ADDON/CHANGELOG.md
 
@@ -68,5 +74,4 @@ jobs:
 
           git commit -m "docs: Update changelog for $ADDON $VERSION" || exit 0
 
-          git pull --rebase origin ${{ github.ref_name }}
           git push origin ${{ github.ref_name }}
