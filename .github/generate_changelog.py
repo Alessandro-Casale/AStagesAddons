@@ -8,6 +8,7 @@ addon = sys.argv[1]
 def run(cmd):
     return subprocess.check_output(cmd, shell=True).decode().strip()
 
+# 1. GET TAG RANGE
 tags = run(f"git tag --list '{addon}-v*'").split("\n")
 tags = [t for t in tags if t]
 
@@ -16,44 +17,50 @@ if tags:
 else:
     from_tag = run("git rev-list --max-parents=0 HEAD")
 
+# 2. GET COMMITS
 log = run(f"git log {from_tag}..HEAD --pretty=format:'%s'")
 
 commits = log.split("\n")
 
-global_commits = []
-addon_commits = []
+# 3. PARSE
+pattern = re.compile(r"^(feat|fix|docs|refactor|chore|api|perf|removed)(\(([^)]+)\))?:\s*(.+)$")
 
-pattern = re.compile(r"^(feat|fix|docs|refactor|chore)(\((.+)\))?: (.+)$")
+seen = set()
+output_commits = []
 
 for c in commits:
     m = pattern.match(c)
     if not m:
         continue
 
+    type_ = m.group(1)
     scope = m.group(3)
-    title = m.group(4)
+    title = m.group(4).strip()
 
-    if scope is None:
-        global_commits.append(title)
-    elif scope == addon:
-        addon_commits.append(title)
+    # dedupe
+    key = f"{type_}:{scope}:{title}"
+    if key in seen:
+        continue
+    seen.add(key)
 
-def section(title, items):
-    if not items:
-        return ""
-    out = f"### {title}\n"
-    for i in items:
-        out += f"- {i}\n"
-    return out + "\n"
+    # FILTER LOGIC (IMPORTANT FIX)
+    if scope is None or scope == addon or scope.startswith(addon):
+        output_commits.append(f"- {type_}: {title}")
 
+# 4. VERSION
 version = run(f"grep '^mod_version=' addon-{addon}/gradle.properties | cut -d= -f2").split("-")[0]
+
 date = datetime.now().strftime("%d-%m-%Y")
 
-output = f"## [{version}] - {date}\n\n"
-output += section("General changes", global_commits)
-output += section(f"{addon} changes", addon_commits)
+# 5. FINAL OUTPUT (NO GLOBAL/SPEC SPLIT)
+changelog = f"""
+## [{version}] - {date}
+
+### Changes
+{chr(10).join(output_commits) if output_commits else "- No relevant changes"}
+"""
 
 with open(f"addon-{addon}/CHANGELOG.md", "w") as f:
-    f.write(output)
+    f.write(changelog)
 
-print(output)
+print(changelog)
