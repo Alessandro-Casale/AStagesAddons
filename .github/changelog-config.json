@@ -1,31 +1,4 @@
 {
-  "template": "\n\n#{{CHANGELOG}}\n",
-  "pr_template": "- #{{TITLE}}. ([##{{NUMBER}}](#{{URL}}))",
-  "commit_template": "- #{{TITLE}} ([#{{SHA}}](https://github.com/Alessandro-Casale/AStagesAddons/commit/#{{SHA}}))",
-  "conventional_commits": {
-    "type_to_label": true
-  },
-  "categories": [
-    {
-      "title": "New Features",
-      "labels": ["feat"]
-    },
-    {
-      "title": "Bug Fixes",
-      "labels": ["fix"]
-    },
-    {
-      "title": "API Changes",
-      "labels": ["api"]
-    },
-    {
-      "title": "Performance Improvements",
-      "labels": ["perf"]
-    },
-    {
-      "title": "Removed Features",
-      "labels": ["removed"]
-    }
-  ],
-  "ignore_labels": []
+  "template": "#{{CHANGELOG}}",
+  "commit_template": "- #{{TITLE}}"
 }
