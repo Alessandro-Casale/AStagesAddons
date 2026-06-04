@@ -1,4 +1,0 @@
-{
-  "template": "#{{CHANGELOG}}",
-  "commit_template": "- #{{TITLE}}"
-}
