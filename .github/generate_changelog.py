@@ -53,7 +53,8 @@ for c in commits:
         continue
 
     type_ = m.group(1)
-    scope = m.group(2)
+    raw_scope = m.group(2)
+    scope = raw_scope.strip("()") if raw_scope else None
     title = m.group(3).strip()
 
     if scope is None or scope == addon:
