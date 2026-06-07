@@ -1,0 +1,50 @@
+buildscript {
+    repositories {
+        maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
+        mavenCentral()
+    }
+    dependencies {
+        // Teniamo qui il classpath di Mixin così che sia accessibile da tutti i sotto-progetti
+        classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
+    }
+}
+
+plugins {
+    id 'eclipse'
+    id 'idea'
+    id 'net.minecraftforge.gradle' version '[6.0.16,6.2)' apply false
+    id 'org.parchmentmc.librarian.forgegradle' version '1.+' apply false
+    id "me.modmuss50.mod-publish-plugin" version "1.1.0" apply false
+}
+
+subprojects {
+    repositories {
+        mavenCentral()
+
+        maven {
+            name = "Illusive Soulworks maven"
+            url = uri("https://maven.theillusivec4.top/")
+        }
+
+        maven {
+            url = uri("https://maven.architectury.dev")
+            content {
+                includeGroup("dev.architectury")
+            }
+        }
+
+        maven {
+            url = uri("https://maven.latvian.dev/releases")
+            content {
+                includeGroup("dev.latvian.mods")
+            }
+        }
+
+        maven {
+            url = uri("https://www.cursemaven.com")
+            content {
+                includeGroup("curse.maven")
+            }
+        }
+    }
+}
