@@ -73,17 +73,18 @@ date = datetime.now().strftime("%d-%m-%Y")
 # 6. BUILD OUTPUT
 # -------------------------
 output = []
-output.append(f"## [{version}] - {date}\n")
+output.append(f"## [{version}] - {date}  ")
+output.append("")
 
 for key in ["feat", "fix", "api", "perf", "removed"]:
     items = grouped.get(key, [])
     if not items:
         continue
 
-    output.append(f"### {categories[key]}")
+    output.append(f"### {categories[key]}  ")
     for i in items:
-        output.append(f"- {i}")
-    output.append("")  # spacing
+        output.append(f"- {i}  ")
+    output.append("")
 
 final_output = "\n".join(output).strip() + "\n"
 
