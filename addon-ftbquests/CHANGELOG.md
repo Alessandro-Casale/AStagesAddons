@@ -1,7 +1,7 @@
-## [2.0.0] - 05-06-2026
+## [2.0.0] - 07-06-2026  
 
-### New Features
-- Compatibility with AStages 2.0.0 and higher
+### New Features  
+- Compatibility with AStages 2.0.0 and higher  
 
-### API Changes
+### API Changes  
 - Change parameter name
