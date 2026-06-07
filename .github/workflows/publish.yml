@@ -32,7 +32,8 @@ jobs:
 
       - name: Run Gradle Build and Publish
         run: |
-          ./gradlew :${{ inputs.addon }}:build :${{ inputs.addon }}:publishMods
+          REAL_PROJECT_NAME="addon-${{ inputs.addon }}"
+          ./gradlew :$REAL_PROJECT_NAME:build :$REAL_PROJECT_NAME:publishMods
         env:
           CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
           MODRINTH_API_KEY: ${{ secrets.MODRINTH_API_KEY }}
