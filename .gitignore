@@ -1,0 +1,11 @@
+.gradle
+.idea
+build
+run
+libs
+addon-curios/run
+addon-curios/run-data
+addon-ftbquests/run
+addon-ftbquests/run-data
+addon-pufferfish/run
+addon-pufferfish/run-data
