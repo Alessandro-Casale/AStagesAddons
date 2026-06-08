@@ -81,7 +81,7 @@ for key in ["feat", "fix", "api", "perf", "removed"]:
     if not items:
         continue
 
-    output.append(f"### {categories[key]}  ")
+    output.append(f"{categories[key]}  ")
     for i in items:
         output.append(f"- {i}  ")
     output.append("")
