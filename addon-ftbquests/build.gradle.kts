@@ -104,7 +104,7 @@ publishMods {
             changelog.set(
                 providers.fileContents(changelogFile)
                     .asText
-                    .map { it.lineSequence().drop(3).joinToString("\n") }
+                    .map { it.lineSequence().drop(2).joinToString("\n") }
             )
         } else {
             changelog.set(changelog.get().dropFirstLine())
