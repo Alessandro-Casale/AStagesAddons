@@ -102,9 +102,9 @@ subprojects {
 
     dependencies {
         implementation "curse.maven:astages-1120180:8136882"
-        // implementation("dev.latvian.mods:kubejs-neoforge:2101.7.2-build.348")
-        implementation files(rootProject.file("libs/rhino-2101.2.7-build.81.jar"))
-        implementation files(rootProject.file("libs/kubejs-neoforge-2101.7.2-build.368.jar"))
+        implementation("dev.latvian.mods:kubejs-neoforge:2101.7.2-build.348")
+        // implementation files(rootProject.file("libs/rhino-2101.2.7-build.81.jar"))
+        // implementation files(rootProject.file("libs/kubejs-neoforge-2101.7.2-build.368.jar"))
         implementation("curse.maven:probejs-585406:7105159")
     }
 
