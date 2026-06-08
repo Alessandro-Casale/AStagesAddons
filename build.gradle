@@ -55,6 +55,10 @@ subprojects {
                 includeGroup("com.github.rtyley")
             }
         }
+
+        maven {
+            url = uri("https://maven.theillusivec4.top/")
+        }
     }
 
     neoForge {

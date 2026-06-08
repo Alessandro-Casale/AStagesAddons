@@ -22,7 +22,7 @@ neoForge {
 group = mod_group_id
 
 dependencies {
-    implementation("curse.maven:curios-309927:6529130")
+    implementation("top.theillusivec4.curios:curios-neoforge:9.5.1+1.21.1")
 }
 
 publishMods {
