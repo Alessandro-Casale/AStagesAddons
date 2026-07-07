@@ -91,7 +91,7 @@ dependencies {
     compileOnly(fg.deobf("top.theillusivec4.curios:curios-forge:5.14.1+1.20.1:api"))
     runtimeOnly(fg.deobf("top.theillusivec4.curios:curios-forge:5.14.1+1.20.1"))
 
-    implementation(fg.deobf("curse.maven:astages-1120180:7889277"))
+    implementation(fg.deobf("curse.maven:astages-1120180:8387881"))
 
     annotationProcessor("org.spongepowered:mixin:0.8.5:processor")
 }

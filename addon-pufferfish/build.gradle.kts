@@ -90,7 +90,7 @@ dependencies {
 
     implementation(fg.deobf("curse.maven:puffish-skills-835091:8181003"))
 
-    implementation(fg.deobf("curse.maven:astages-1120180:7889277"))
+    implementation(fg.deobf("curse.maven:astages-1120180:8387881"))
 
     annotationProcessor("org.spongepowered:mixin:0.8.5:processor")
 }

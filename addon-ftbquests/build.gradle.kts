@@ -92,7 +92,7 @@ dependencies {
     implementation(fg.deobf("curse.maven:ftb-teams-forge-404468:7499810"))
     implementation(fg.deobf("curse.maven:ftb-quests-forge-289412:8078538"))
 
-    implementation(fg.deobf("curse.maven:astages-1120180:7889277"))
+    implementation(fg.deobf("curse.maven:astages-1120180:8387881"))
 
     annotationProcessor("org.spongepowered:mixin:0.8.5:processor")
 }
