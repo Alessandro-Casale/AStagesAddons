@@ -12,7 +12,7 @@ def run(cmd):
 # -------------------------
 # 1. TAG RANGE
 # -------------------------
-tags = run(f"git tag --list '{addon}-v1.20.1'").split("\n")
+tags = run(f"git tag --list '{addon}-v*-1.20.1'").split("\n")
 tags = [t for t in tags if t]
 
 if tags:
