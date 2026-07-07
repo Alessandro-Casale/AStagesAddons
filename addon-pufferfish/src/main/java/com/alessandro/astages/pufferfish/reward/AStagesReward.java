@@ -67,9 +67,9 @@ public class AStagesReward implements Reward {
 
         if (context.isAction()) {
             if (this.operation == AStagesReward.Operation.ADD) {
-                AStagesUtils.addStage(AHolder.player(player), stage, true);
+                AStagesUtils.addStage(AHolder.player(player), stage, true, true, true);
             } else if (this.operation == AStagesReward.Operation.REMOVE) {
-                AStagesUtils.removeStage(AHolder.player(player), stage, true);
+                AStagesUtils.removeStage(AHolder.player(player), stage, true, true, true);
             }
         }
 

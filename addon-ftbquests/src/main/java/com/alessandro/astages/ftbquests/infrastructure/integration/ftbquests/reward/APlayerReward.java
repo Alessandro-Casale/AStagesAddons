@@ -26,11 +26,11 @@ public class APlayerReward extends AGenericReward {
     public void claim(ServerPlayer serverPlayer, boolean notify) {
         if (!isRemove()) {
             AFTBTeamsUtils.performForPlayerOrTeam(serverPlayer, uuid ->
-                AStagesUtils.addStage(AHolder.player(uuid), getStage(), !notify)
+                AStagesUtils.addStage(AHolder.player(uuid), getStage(), notify, notify, notify)
             );
         } else {
             AFTBTeamsUtils.performForPlayerOrTeam(serverPlayer, uuid ->
-                AStagesUtils.removeStage(AHolder.player(uuid), getStage(), !notify)
+                AStagesUtils.removeStage(AHolder.player(uuid), getStage(), notify, notify, notify)
             );
         }
     }

@@ -24,9 +24,9 @@ public class AServerReward extends AGenericReward {
     @Override
     public void claim(ServerPlayer serverPlayer, boolean notify) {
         if (!isRemove()) {
-            AStagesUtils.addStage(AHolder.server(), getStage(), !notify);
+            AStagesUtils.addStage(AHolder.server(), getStage(), notify, notify, notify);
         } else {
-            AStagesUtils.removeStage(AHolder.server(), getStage(), !notify);
+            AStagesUtils.removeStage(AHolder.server(), getStage(), notify, notify, notify);
         }
     }
 }
